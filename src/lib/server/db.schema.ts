@@ -5,7 +5,7 @@ import type { AdapterAccount } from '@auth/core/adapters';
 export const links = sqliteTable('links', {
 	id: text('id').notNull().primaryKey(),
 	short: text('short').notNull(),
-	long: integer('int_modifiers', { mode: 'boolean' }).notNull().default(false),
+	long: text('long').notNull(),
 	author: text('author'),
 	created: integer('created')
 		.notNull()
