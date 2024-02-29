@@ -2,6 +2,7 @@
 node_modules
 /build
 /.svelte-kit
+/.drizzle
 /package
 .env
 .env.*
@@ -10,4 +11,3 @@ node_modules
 .output
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-drizzle/
