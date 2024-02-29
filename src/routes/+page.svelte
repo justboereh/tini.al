@@ -77,7 +77,6 @@
 </div>
 
 <Dialog.Root open={true}>
-	<Dialog.Trigger>Edit Profile</Dialog.Trigger>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>Edit profile</Dialog.Title>

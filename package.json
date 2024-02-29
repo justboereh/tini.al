@@ -1,5 +1,5 @@
 {
-	"name": "tini.al",
+	"name": "tini.si",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
@@ -50,6 +50,7 @@
 		"@libsql/client": "^0.5.2",
 		"bits-ui": "^0.18.2",
 		"clsx": "^2.1.0",
+		"dayjs": "^1.11.10",
 		"drizzle-orm": "^0.29.4",
 		"formsnap": "^0.4.4",
 		"nanoid": "^5.0.6",
