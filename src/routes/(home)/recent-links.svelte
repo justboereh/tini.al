@@ -43,7 +43,13 @@
 
 			<Sheet.Footer>
 				<Sheet.Close asChild let:builder>
-					<Button variant="outline" builders={[builder]}>
+					<Button
+						variant="outline"
+						on:click={() => {
+							storage?.clear();
+							links = [];
+						}}
+					>
 						<Trash class="mr-2 h-4 w-4" />
 
 						Clear Links
