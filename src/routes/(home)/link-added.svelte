@@ -1,29 +1,30 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { mediaQuery, debounceClickAction } from 'svelte-legos';
+	import { mediaQuery } from 'svelte-legos';
 	import { createEventDispatcher } from 'svelte';
-	import { Rocket, Clipboard } from 'svelte-radix';
-	import { set } from 'zod';
+	import { Clipboard } from 'svelte-radix';
 
 	const dispatch = createEventDispatcher();
 
 	export let id: string = '';
+	let open = true;
 
 	let copied = false;
 	const isDesktop = mediaQuery('(min-width: 768px)');
-
-	function OpenChange(...args: any) {
-		console.log(...args);
-	}
 </script>
 
 {#if $isDesktop}
-	<Dialog.Root open={true} onOpenChange={OpenChange}>
+	<Dialog.Root
+		{open}
+		onOpenChange={(isOpened) => {
+			if (isOpened) return;
+
+			dispatch('close');
+			open = false;
+		}}
+	>
 		<Dialog.Content class="sm:max-w-[425px]">
 			<Dialog.Header>
 				<Dialog.Title>Link Shortened</Dialog.Title>
@@ -57,7 +58,13 @@
 		</Dialog.Content>
 	</Dialog.Root>
 {:else}
-	<Drawer.Root open={true} onClose={() => dispatch('close')}>
+	<Drawer.Root
+		{open}
+		onClose={() => {
+			dispatch('close');
+			open = false;
+		}}
+	>
 		<Drawer.Content>
 			<Drawer.Header class="text-left">
 				<Drawer.Title>Link Shortened</Drawer.Title>

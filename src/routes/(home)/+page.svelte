@@ -2,25 +2,29 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { ofetch } from 'ofetch';
-	import { Rocket, HamburgerMenu, Reload } from 'radix-icons-svelte';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Rocket, Reload } from 'svelte-radix';
 	import { toast } from 'svelte-sonner';
-	import { Toaster } from '$lib/components/ui/sonner';
 	import LinkAdded from './link-added.svelte';
+	import RecentLinks from './recent-links.svelte';
+	import { onMount } from 'svelte';
+	import { createStorage, type Storage } from 'unstorage';
+	import localStorageDriver from 'unstorage/drivers/localstorage';
+	import dayjs from 'dayjs';
+	import utc from 'dayjs/plugin/utc';
+	import type { Link } from '$lib/types';
 
-	const links = [
-		{ label: 'About', href: '/about' },
-		{ label: 'Github', href: 'https://github.com/justboereh/tini.si' },
-		{ label: 'Pricing', href: '/pricing' },
-		{ label: 'Account', href: '/account' }
-	];
+	dayjs.extend(utc);
 
+	const BASE_STORAGE_KEY = 'tini.si-links';
+
+	let storage: Storage<Link> | undefined;
 	let input: string | undefined;
 	let alias: string | undefined;
 	let added: string | undefined;
 	let isShortening = false;
 	let input_error = '';
 	let shorten_error = '';
+	let links: Link[] = [];
 
 	$: canShorten = input !== undefined && input.length > 0 && input_error.length < 1;
 
@@ -39,9 +43,10 @@
 	}
 
 	async function Shorten() {
-		if (!input) return;
-		if (!canShorten) return;
-		if (isShortening) return;
+		if (!input) return toast.error('URL is required');
+		if (!canShorten) return toast.error('Invalid URL');
+		if (isShortening) return toast.error('Please wait while a link is being shortened');
+		if (!storage) return toast.error('Storage not initilized');
 
 		isShortening = true;
 		added = undefined;
@@ -58,9 +63,31 @@
 			}
 		});
 
+		if (!added) return;
+
+		storage.setItem(added, { location: input, created: dayjs.utc().unix() });
+
 		isShortening = false;
 		input = undefined;
 	}
+
+	onMount(async () => {
+		storage = createStorage({
+			driver: localStorageDriver({ base: BASE_STORAGE_KEY })
+		});
+
+		for (const key of await storage.getKeys()) {
+			if (!key.startsWith(BASE_STORAGE_KEY)) continue;
+
+			const link = localStorage.getItem(key);
+			if (!link) continue;
+
+			links = [
+				...links,
+				{ ...(JSON.parse(link) as Link), id: key.replace(`${BASE_STORAGE_KEY}:`, '') }
+			];
+		}
+	});
 </script>
 
 <svelte:head>
@@ -98,45 +125,6 @@
 	</div>
 </div>
 
-<div class="fixed top-0 w-full p-4">
-	<div class="relative mx-auto flex max-w-7xl justify-center">
-		<div class="min-w-content grid gap-4 sm:grid-cols-5">
-			{#each links.slice(0, 2) as { label, href }}
-				<a {href} class="hidden place-items-center sm:grid">
-					<Button variant="link">{label}</Button>
-				</a>
-			{/each}
-
-			<a href="/" class="tinial-logo text-4xl font-bold">tini.si</a>
-
-			{#each links.slice(2, 4) as { label, href }}
-				<a {href} class="hidden place-items-center sm:grid">
-					<Button variant="link">{label}</Button>
-				</a>
-			{/each}
-		</div>
-
-		<div class="absolute right-0 sm:hidden">
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					<Button variant="outline" size="icon">
-						<HamburgerMenu />
-					</Button>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					<DropdownMenu.Group>
-						{#each links as { label, href }}
-							<DropdownMenu.Item {href}>{label}</DropdownMenu.Item>
-						{/each}
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-		</div>
-	</div>
-</div>
-
-<Toaster />
-
 {#if added}
 	<LinkAdded
 		id={added}
@@ -146,8 +134,4 @@
 	/>
 {/if}
 
-<style>
-	.tinial-logo {
-		font-family: 'Poppins', sans-serif;
-	}
-</style>
+<RecentLinks {links} {storage} />
