@@ -3,9 +3,7 @@ import { db } from '$lib/server/db.js';
 import { links } from '$lib/server/db.schema.js';
 import { eq } from 'drizzle-orm';
 
-/** @type {import('./$types').RequestHandler} */
-
-export async function GET({ params: { link_id } }) {
+export async function load({ params: { link_id } }) {
 	const res = await db
 		.select({ location: links.location })
 		.from(links)
@@ -13,7 +11,7 @@ export async function GET({ params: { link_id } }) {
 		.execute();
 
 	if (res.length === 0) {
-		error(404, 'Link not found');
+		error(404, 'Not found');
 	}
 
 	return Response.redirect(res[0].location, 301);
