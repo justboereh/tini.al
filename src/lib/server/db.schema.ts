@@ -5,7 +5,8 @@ import type { AdapterAccount } from '@auth/core/adapters';
 export const links = sqliteTable('links', {
 	id: text('id').notNull().primaryKey(),
 	location: text('location').notNull(),
-	author: text('author'),
+	hash: text('hash').notNull(),
+	author: text('author').references(() => users.id, { onDelete: 'set null', onUpdate: 'cascade' }),
 	created: integer('created')
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`)

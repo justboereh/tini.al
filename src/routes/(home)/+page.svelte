@@ -67,8 +67,25 @@
 
 		storage.setItem(added, { location: input, created: dayjs.utc().unix() });
 
+		UpdateLinks();
+
 		isShortening = false;
 		input = undefined;
+	}
+
+	async function UpdateLinks() {
+		if (!storage) return;
+
+		for (const key of await storage.getKeys()) {
+			if (!key.startsWith(BASE_STORAGE_KEY)) continue;
+
+			const link = localStorage.getItem(key);
+			const id = key.replace(`${BASE_STORAGE_KEY}:`, '');
+			if (!link) continue;
+			if (links.findIndex((x) => x.id === id) > -1) continue;
+
+			links = [...links, { ...(JSON.parse(link) as Link), id }];
+		}
 	}
 
 	onMount(async () => {
@@ -76,17 +93,7 @@
 			driver: localStorageDriver({ base: BASE_STORAGE_KEY })
 		});
 
-		for (const key of await storage.getKeys()) {
-			if (!key.startsWith(BASE_STORAGE_KEY)) continue;
-
-			const link = localStorage.getItem(key);
-			if (!link) continue;
-
-			links = [
-				...links,
-				{ ...(JSON.parse(link) as Link), id: key.replace(`${BASE_STORAGE_KEY}:`, '') }
-			];
-		}
+		UpdateLinks();
 	});
 </script>
 
@@ -94,12 +101,9 @@
 	<title>tini.si</title>
 </svelte:head>
 
-<div class="pointer-events-none fixed bottom-0 left-0 right-0 top-0 flex flex-col">
+<div class="h-screen-nav flex flex-col">
 	<div class="grid flex-grow place-items-center p-4">
-		<form
-			class="pointer-events-auto mx-auto flex w-full max-w-lg gap-4"
-			on:submit|preventDefault={Shorten}
-		>
+		<form class="mx-auto flex w-full max-w-2xl gap-4" on:submit|preventDefault={Shorten}>
 			<div class="relative flex-grow">
 				<Input bind:value={input} placeholder="URL to be shorten" />
 

@@ -14,7 +14,7 @@
 </script>
 
 <div class="p-4">
-	<div class="relative mx-auto flex max-w-7xl justify-center">
+	<div class="relative mx-auto flex h-10 max-w-7xl items-center justify-center">
 		<div class="min-w-content grid gap-4 sm:grid-cols-5">
 			<a href="/about" class="hidden place-items-center sm:grid">
 				<Button variant="link">About</Button>
@@ -28,7 +28,9 @@
 				</Button>
 			</a>
 
-			<a href="/" class="tinial-logo text-4xl font-bold hover:underline">tini.si</a>
+			<a href="/" class="tinial-logo place-items-center font-bold hover:underline sm:grid">
+				tini.si
+			</a>
 
 			<a href="/pricing" class="hidden place-items-center sm:grid">
 				<Button variant="link">Pricing</Button>
@@ -71,5 +73,9 @@
 <style>
 	.tinial-logo {
 		font-family: 'Poppins', sans-serif;
+	}
+
+	:global(.h-screen-nav) {
+		height: calc(100vh - 5rem);
 	}
 </style>
