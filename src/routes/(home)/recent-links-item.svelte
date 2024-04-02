@@ -9,12 +9,14 @@
 	import utc from 'dayjs/plugin/utc';
 	import relative from 'dayjs/plugin/relativeTime';
 	import { clickOutsideAction } from 'svelte-legos';
-	import { tick } from 'svelte';
+	import { safeParse } from 'valibot';
+	import { idSchema } from '$lib/links';
+	import { ofetch } from 'ofetch';
+	import { toast } from 'svelte-sonner';
 
 	dayjs.extend(utc);
 	dayjs.extend(relative);
 
-	// export let storage: Storage<Link> | undefined;
 	export let link: Link;
 	let isEditingID = false;
 	let linkID = link.id;
@@ -24,9 +26,17 @@
 		isEditingID = false;
 
 		if (linkID === link.id) return;
-		if (!linkID) return (linkID = link.id);
+		if (!linkID || !safeParse(idSchema, linkID).success) return (linkID = link.id);
 
-		console.log(link.id);
+		try {
+			await ofetch<string>(`/api/links/${link.id}`, {
+				method: 'PATCH',
+				body: { id: linkID }
+			});
+		} catch (e) {
+			toast.error('An error occurred while updating the link ID');
+			linkID = link.id;
+		}
 	}
 </script>
 
@@ -46,7 +56,7 @@
 								on:keypress={(event) => {
 									if (event.key !== 'Enter') return;
 
-									UpdateLinkID();
+									isEditingID = false;
 								}}
 							/>
 						</div>
@@ -84,7 +94,17 @@
 								Copy
 							</DropdownMenu.Item>
 
-							<DropdownMenu.Item>
+							<DropdownMenu.Item
+								on:click={async () => {
+									try {
+										await ofetch(`/api/links/${link.id}`, {
+											method: 'DELETE'
+										});
+									} catch (e) {
+										toast.error('An error occurred while deleting the link');
+									}
+								}}
+							>
 								<Trash size={16} class="mr-2" />
 								Delete
 							</DropdownMenu.Item>

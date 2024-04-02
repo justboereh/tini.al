@@ -7,8 +7,6 @@
 	import LinkAdded from './link-added.svelte';
 	import RecentLinks from './recent-links.svelte';
 	import { onMount } from 'svelte';
-	import { createStorage, type Storage } from 'unstorage';
-	import localStorageDriver from 'unstorage/drivers/localstorage';
 	import dayjs from 'dayjs';
 	import utc from 'dayjs/plugin/utc';
 	import type { Link } from '$lib/types';
@@ -17,7 +15,6 @@
 
 	const BASE_STORAGE_KEY = 'tini.si-links';
 
-	let storage: Storage<Link> | undefined;
 	let input: string | undefined;
 	let alias: string | undefined;
 	let added: string | undefined;
@@ -46,14 +43,13 @@
 		if (!input) return toast.error('URL is required');
 		if (!canShorten) return toast.error('Invalid URL');
 		if (isShortening) return toast.error('Please wait while a link is being shortened');
-		if (!storage) return toast.error('Storage not initilized');
 
 		isShortening = true;
 		added = undefined;
 		shorten_error = '';
 
-		added = await ofetch<string>('/api/link', {
-			method: 'POST',
+		added = await ofetch<string>('/api/links', {
+			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json'
 			},
@@ -65,36 +61,22 @@
 
 		if (!added) return;
 
-		storage.setItem(added, { location: input, created: dayjs.utc().unix() });
-
-		UpdateLinks();
+		FetchLinks();
 
 		isShortening = false;
 		input = undefined;
 	}
 
-	async function UpdateLinks() {
-		if (!storage) return;
-
-		for (const key of await storage.getKeys()) {
-			if (!key.startsWith(BASE_STORAGE_KEY)) continue;
-
-			const link = localStorage.getItem(key);
-			const id = key.replace(`${BASE_STORAGE_KEY}:`, '');
-			if (!link) continue;
-			if (links.findIndex((x) => x.id === id) > -1) continue;
-
-			links = [...links, { ...(JSON.parse(link) as Link), id }];
-		}
+	async function FetchLinks() {
+		links = await ofetch('/api/links', {
+			method: 'POST',
+			onResponseError() {
+				toast.error('An error occurred while fetching links');
+			}
+		});
 	}
 
-	onMount(async () => {
-		storage = createStorage({
-			driver: localStorageDriver({ base: BASE_STORAGE_KEY })
-		});
-
-		UpdateLinks();
-	});
+	onMount(FetchLinks);
 </script>
 
 <svelte:head>
@@ -138,4 +120,4 @@
 	/>
 {/if}
 
-<RecentLinks {links} {storage} />
+<RecentLinks {links} />

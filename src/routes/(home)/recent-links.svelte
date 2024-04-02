@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Reader, Trash } from 'svelte-radix';
-	import { type Storage } from 'unstorage';
 	import RecentLinksItem from './recent-links-item.svelte';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import type { Link } from '$lib/types';
 
 	export let links: Link[] = [];
-	export let storage: Storage<Link> | undefined;
 
 	let open = false;
 </script>
@@ -31,7 +29,8 @@
 				<Sheet.Title>Recent Links</Sheet.Title>
 				<Sheet.Description>
 					This is a list of your recent links. You can click on any of them to view more details.
-					All links will expire in 30 days after creation.
+					All links will expire in 30 days after creation unless you have at least a premium
+					account.
 				</Sheet.Description>
 			</Sheet.Header>
 
@@ -40,22 +39,6 @@
 					<RecentLinksItem {link} />
 				{/each}
 			</div>
-
-			<Sheet.Footer>
-				<Sheet.Close asChild let:builder>
-					<Button
-						variant="outline"
-						on:click={() => {
-							storage?.clear();
-							links = [];
-						}}
-					>
-						<Trash class="mr-2 h-4 w-4" />
-
-						Clear Links
-					</Button>
-				</Sheet.Close>
-			</Sheet.Footer>
 		</div>
 	</Sheet.Content>
 </Sheet.Root>

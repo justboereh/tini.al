@@ -10,8 +10,6 @@ export async function load({ params: { link_id } }) {
 		.where(eq(links.id, link_id))
 		.execute();
 
-	console.log(res);
-
 	if (res.length === 0) {
 		return error(404, 'Not found');
 	}
