@@ -3,16 +3,16 @@ import { db } from '$lib/server/db.js';
 import { links } from '$lib/server/db.schema.js';
 import { eq } from 'drizzle-orm';
 
-export async function load({ params: { link_id } }) {
+export async function load({ params: { link_id }, setHeaders }) {
 	const res = await db
 		.select({ location: links.location })
 		.from(links)
 		.where(eq(links.id, link_id))
 		.execute();
 
-	if (res.length === 0) {
-		return error(404, 'Not found');
-	}
+	setHeaders({ 'Cache-Control': 'no-cache' });
 
-	return redirect(301, res[0].location);
+	if (res.length === 0) return error(404, 'Not found');
+
+	redirect(301, res[0].location);
 }

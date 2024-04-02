@@ -12,6 +12,17 @@ export const links = sqliteTable('links', {
 		.default(sql`CURRENT_TIMESTAMP`)
 });
 
+export const visits = sqliteTable('visits', {
+	id: text('id').notNull().primaryKey(),
+	link: text('link')
+		.notNull()
+		.references(() => links.id, { onDelete: 'cascade' }),
+	visited: integer('visited')
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	region: text('region')
+});
+
 export const users = sqliteTable('user', {
 	id: text('id').notNull().primaryKey(),
 	name: text('name'),
