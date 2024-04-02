@@ -86,7 +86,7 @@
 
 							<DropdownMenu.Item
 								on:click={() => {
-									navigator.clipboard.writeText(`https://tini.si/${link.id}`);
+									navigator.clipboard.writeText(`https://tini.si/${linkID}`);
 								}}
 							>
 								<Clipboard size={16} class="mr-2" />
