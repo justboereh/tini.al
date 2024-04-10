@@ -2,7 +2,6 @@
 	import { HamburgerMenu } from 'svelte-radix';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
-	import { Toaster } from '$lib/components/ui/sonner';
 	import { ExternalLink } from 'svelte-radix';
 
 	const navigationLinks = [
@@ -67,8 +66,6 @@
 </div>
 
 <slot />
-
-<Toaster />
 
 <style>
 	.tinial-logo {

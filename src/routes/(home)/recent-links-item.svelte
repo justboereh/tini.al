@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { type Storage } from 'unstorage';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input/index';
-	import { Clipboard, DotsVertical, Trash } from 'svelte-radix';
+	import { Clipboard, DotsVertical, Trash, Loop } from 'svelte-radix';
 	import type { Link } from '$lib/types';
 	import dayjs from 'dayjs';
 	import utc from 'dayjs/plugin/utc';
@@ -13,30 +12,66 @@
 	import { idSchema } from '$lib/links';
 	import { ofetch } from 'ofetch';
 	import { toast } from 'svelte-sonner';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher<{ refresh: void }>();
 
 	dayjs.extend(utc);
 	dayjs.extend(relative);
 
 	export let link: Link;
-	let isEditingID = false;
-	let linkID = link.id;
+	let state: 'deleting' | 'editing' | null = null;
+	let link_id = link.id;
 	let input: any;
 
-	async function UpdateLinkID() {
-		isEditingID = false;
+	async function Updatelink_id() {
+		state = null;
 
-		if (linkID === link.id) return;
-		if (!linkID || !safeParse(idSchema, linkID).success) return (linkID = link.id);
+		if (link_id === link.id) return;
+
+		const linkParsed = safeParse(idSchema, link_id);
+		if (!link_id || !linkParsed.success) {
+			toast.error((linkParsed.issues || [{ message: 'Unknown error' }])[0].message);
+			link_id = link.id;
+
+			return;
+		}
 
 		try {
 			await ofetch<string>(`/api/links/${link.id}`, {
 				method: 'PATCH',
-				body: { id: linkID }
+				body: { id: link_id }
 			});
-		} catch (e) {
+
+			toast.success(
+				'Link ID updated successfully. Please wait a few seconds for the changes to take effect.'
+			);
+		} catch (e: any) {
 			toast.error('An error occurred while updating the link ID');
-			linkID = link.id;
+
+			console.log(e);
+
+			link.id = link_id;
 		}
+	}
+
+	async function DeleteLink() {
+		if (state === 'deleting') return;
+		state = 'deleting';
+
+		try {
+			await ofetch(`/api/links/${link.id}`, {
+				method: 'DELETE'
+			});
+
+			dispatch('refresh');
+
+			toast.success('Link deleted successfully');
+		} catch (e) {
+			toast.error('An error occurred while deleting the link');
+		}
+
+		state = null;
 	}
 </script>
 
@@ -47,21 +82,21 @@
 		<div class="flex justify-between">
 			<div>
 				<p class="flex gap-0">
-					{#if isEditingID === true}
-						<div use:clickOutsideAction={UpdateLinkID}>
+					{#if state === 'editing'}
+						<div use:clickOutsideAction={Updatelink_id}>
 							<Input
 								bind:node={input}
-								bind:value={linkID}
-								on:blur={() => UpdateLinkID()}
+								bind:value={link_id}
+								on:blur={() => Updatelink_id()}
 								on:keypress={(event) => {
 									if (event.key !== 'Enter') return;
 
-									isEditingID = false;
+									state = null;
 								}}
 							/>
 						</div>
 					{:else}
-						tini.si/{linkID}
+						tini.si/{link_id}
 					{/if}
 				</p>
 
@@ -74,19 +109,23 @@
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
 						<Button variant="ghost" size="icon">
-							<DotsVertical size={16} />
+							{#if state !== null}
+								<Loop size={16} class="animate-spin" />
+							{:else}
+								<DotsVertical size={16} />
+							{/if}
 						</Button>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content>
 						<DropdownMenu.Group>
-							<DropdownMenu.Item on:click={async () => (isEditingID = true)}>
+							<DropdownMenu.Item on:click={async () => (state = 'editing')}>
 								<Trash size={16} class="mr-2" />
 								Edit
 							</DropdownMenu.Item>
 
 							<DropdownMenu.Item
 								on:click={() => {
-									navigator.clipboard.writeText(`https://tini.si/${linkID}`);
+									navigator.clipboard.writeText(`https://tini.si/${link_id}`);
 								}}
 							>
 								<Clipboard size={16} class="mr-2" />
@@ -94,17 +133,7 @@
 								Copy
 							</DropdownMenu.Item>
 
-							<DropdownMenu.Item
-								on:click={async () => {
-									try {
-										await ofetch(`/api/links/${link.id}`, {
-											method: 'DELETE'
-										});
-									} catch (e) {
-										toast.error('An error occurred while deleting the link');
-									}
-								}}
-							>
+							<DropdownMenu.Item on:click={async () => DeleteLink()}>
 								<Trash size={16} class="mr-2" />
 								Delete
 							</DropdownMenu.Item>

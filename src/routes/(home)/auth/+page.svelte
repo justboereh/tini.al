@@ -4,6 +4,10 @@
 	import { GithubLogo, OpenInNewWindow, ArrowTopRight } from 'svelte-radix';
 </script>
 
+<svelte:head>
+	<title>Authentication - tini.si</title>
+</svelte:head>
+
 <div class="h-screen-nav flex flex-col items-center justify-center gap-8">
 	<Button on:click={() => signIn('github')}>
 		<GithubLogo class="mr-2 h-4 w-4" />

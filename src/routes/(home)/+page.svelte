@@ -6,14 +6,11 @@
 	import { toast } from 'svelte-sonner';
 	import LinkAdded from './link-added.svelte';
 	import RecentLinks from './recent-links.svelte';
-	import { onMount } from 'svelte';
 	import dayjs from 'dayjs';
 	import utc from 'dayjs/plugin/utc';
 	import type { Link } from '$lib/types';
 
 	dayjs.extend(utc);
-
-	const BASE_STORAGE_KEY = 'tini.si-links';
 
 	let input: string | undefined;
 	let alias: string | undefined;
@@ -21,7 +18,6 @@
 	let isShortening = false;
 	let input_error = '';
 	let shorten_error = '';
-	let links: Link[] = [];
 
 	$: canShorten = input !== undefined && input.length > 0 && input_error.length < 1;
 
@@ -61,22 +57,9 @@
 
 		if (!added) return;
 
-		FetchLinks();
-
 		isShortening = false;
 		input = undefined;
 	}
-
-	async function FetchLinks() {
-		links = await ofetch('/api/links', {
-			method: 'POST',
-			onResponseError() {
-				toast.error('An error occurred while fetching links');
-			}
-		});
-	}
-
-	onMount(FetchLinks);
 </script>
 
 <svelte:head>
@@ -85,7 +68,7 @@
 
 <div class="h-screen-nav flex flex-col">
 	<div class="grid flex-grow place-items-center p-4">
-		<form class="mx-auto flex w-full max-w-2xl gap-4" on:submit|preventDefault={Shorten}>
+		<form class="mx-auto flex w-full max-w-5xl gap-4" on:submit|preventDefault={Shorten}>
 			<div class="relative flex-grow">
 				<Input bind:value={input} placeholder="URL to be shorten" />
 
@@ -120,4 +103,4 @@
 	/>
 {/if}
 
-<RecentLinks {links} />
+<RecentLinks />

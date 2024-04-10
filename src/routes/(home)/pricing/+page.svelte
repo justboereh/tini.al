@@ -1,56 +1,65 @@
 <script lang="ts">
-	import { Card, CardHeader, CardContent } from '$lib/components/ui/card';
+	import { Card } from '$lib/components/ui/card';
 	import { Tooltip, TooltipTrigger, TooltipContent } from '$lib/components/ui/tooltip';
 	import { Button } from '$lib/components/ui/button';
+	import {
+		Accordion,
+		AccordionContent,
+		AccordionItem,
+		AccordionTrigger
+	} from '$lib/components/ui/accordion';
 	import { Check, Cross1 } from 'svelte-radix';
 	import { cn } from '$lib/utils';
+	import { pricings } from '$lib/pricings';
 
-	const pricings = [
+	const FAQs = [
 		{
-			title: 'Free / No Account',
-			price: '$0.00',
-			pros: ['Unlimited links', 'Unlimited visits', 'Links deletion'],
-			cons: [
-				'Custom alias',
-				'Custom domains',
-				'Link editing',
-				'Analytics',
-				'API access',
-				'Personalized support'
-			]
+			id: 'refunds',
+			question: 'Do you offer refunds?',
+			answer:
+				'Yes, we offer refunds excluding fees if: It is requested within 7 days of billing cycle and the account has not been used to abuse our services.'
 		},
 		{
-			title: 'Basic',
-			price: '$0.99',
-			pros: ['Everything in Free', 'Custom links alias', 'Link editing'],
-			cons: ['Custom domains', 'Analytics', 'API access', 'Personalized support']
+			id: 'cancel',
+			question: 'Can I cancel my subscription?',
+			answer:
+				'Yes, you can cancel your subscription at any time. Your subscription will remain active until the end of the billing cycle.'
 		},
 		{
-			title: 'Pro',
-			most_popular: true,
-			price: '$4.99',
-			pros: [
-				'Everything in Basic',
-				'Analytics (coming soon)',
-				'Custom domains (coming soon)',
-				'API access (coming soon)'
-			],
-			cons: ['Personalized support', 'Free humpback whale', 'X-ray vision']
+			id: 'change',
+			question: 'Can I change my plan?',
+			answer:
+				'Yes, you can change your plan at any time. The changes will take effect immediately and you will be charged or refunded the difference.'
 		},
 		{
-			title: 'Teams',
-			price: '$24.99',
-			pros: ['Everything in Pro', 'Personalized Support'],
-			cons: [
-				'Access control',
-				'A whole lot of nothing',
-				'Seriously, nothing',
-				'Free humpback whale',
-				'X-ray vision'
-			]
+			id: 'payment',
+			question: 'What payment methods do you accept?',
+			answer:
+				'We accept all major credit and debit cards. We also accept PayPal, Apple Pay, Google Pay, and other payment methods.'
+		},
+		{
+			id: 'tax',
+			question: 'Do you charge tax?',
+			answer:
+				'Yes, we charge tax based on your location. The tax amount will be displayed during the checkout process and is handle by Stripe.'
+		},
+		{
+			id: 'trial',
+			question: 'Do you offer a free trial?',
+			answer: 'No, I do not offer any free trial because I am broke and bad with finance.'
+		},
+		{
+			id: 'open-source',
+			question: 'Is this project open-source?',
+			answer:
+				'Yes, this project is open-source and available on GitHub at https://github.com/justboereh/tini.si. You can use it for free and contribute to the project if you want.'
 		}
 	];
 </script>
+
+<svelte:head>
+	<title>Pricing - tini.si</title>
+</svelte:head>
 
 <div class="p-4">
 	<div class="mx-auto max-w-5xl space-y-4">
@@ -74,12 +83,14 @@
 												builders={[builder]}
 												size="sm"
 												variant="link"
-												class="rounded-full bg-yellow-700">Most Popular</Button
+												class="rounded-full bg-yellow-700 text-white"
 											>
+												Most Popular
+											</Button>
 										</TooltipTrigger>
 
 										<TooltipContent>
-											<p class="text-center">This is the most popular plan, trust me bro.</p>
+											<p class="text-center">source: trust me bro.</p>
 										</TooltipContent>
 									</Tooltip>
 								{/if}
@@ -122,5 +133,21 @@
 				</Card>
 			{/each}
 		</div>
+
+		<br />
+
+		<h3 class="text-center">Never Asked Questions</h3>
+
+		<Accordion>
+			{#each FAQs as { id, question, answer }}
+				<AccordionItem value={id}>
+					<AccordionTrigger>
+						{question}
+					</AccordionTrigger>
+
+					<AccordionContent>{answer}</AccordionContent>
+				</AccordionItem>
+			{/each}
+		</Accordion>
 	</div>
 </div>

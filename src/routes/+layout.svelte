@@ -1,9 +1,12 @@
 <script>
 	import '../app.pcss';
 	import { onMount } from 'svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 </script>
 
 <slot />
+
+<Toaster />
 
 <style>
 	:global(h1) {
